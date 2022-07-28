@@ -1,20 +1,49 @@
-import React, { useEffect } from "react";
+//@ts-nocheck
+import React, { useEffect, useState, useRef } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 
 function App() {
+  const [isShowBtn, setIsShowBtn] = useState<boolean>(true);
+  // const [event, setEvent] = useState<Event | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const deferredInstall = useRef<Event | null>(null);
   useEffect(() => {
-    console.log("effect");
-    window.addEventListener("beforeinstallprompt", (ev) => {
-      console.log("beforeinstallprompt app", ev);
+    console.log("useEffect");
+    window.addEventListener("beforeinstallprompt", (event) => {
+      deferredInstall.current = event;
+      console.log("beforeinstallprompt app", event);
     });
   }, []);
 
+  const handleButtonClick = () => {
+    setIsShowBtn(false);
+    if (deferredInstall.current) {
+      console.log("evt handleButtonClick", deferredInstall.current);
+      deferredInstall.current.prompt();
+      deferredInstall.current.userChoice.then((choice) => {
+        if (choice.outcome === "accepted") {
+          console.log("installed");
+        } else {
+          console.log("cancel");
+        }
+      });
+    }
+  };
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <button>clike me 2</button>
+        {isShowBtn && (
+          <button
+            type="button"
+            style={{ color: "red" }}
+            ref={buttonRef}
+            onClick={handleButtonClick}
+          >
+            install app 3
+          </button>
+        )}
       </header>
     </div>
   );
